@@ -8,5 +8,6 @@ class BookController extends Controller
 {
     public function getAll()
     {
+        return response()->json(['test']);
     }
 }
