@@ -10,7 +10,7 @@ class Book extends Model
 {
     use HasFactory;
 
-    public function genres(): BelongsTo
+    public function genre(): BelongsTo
     {
         return $this->belongsTo(Genre::class);
     }
