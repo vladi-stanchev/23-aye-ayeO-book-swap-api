@@ -14,4 +14,9 @@ class BookController extends Controller
             'message' => 'Books successfully retrieved'
         ]);
     }
+
+    public function claim()
+    {
+        return response()->json(['test']);
+    }
 }
