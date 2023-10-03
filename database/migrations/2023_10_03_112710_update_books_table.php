@@ -10,11 +10,11 @@ return new class extends Migration
   public function up(): void
   {
     Schema::table('books', function (Blueprint $table) {
-      $table->string('blurb');
-      $table->string('claimed_by_name');
-      $table->integer('page_count');
-      $table->integer('year');
-      $table->foreignId('review_id');
+      $table->string('blurb')->nullable();
+      $table->string('claimed_by_name')->nullable();
+      $table->integer('page_count')->nullable();
+      $table->integer('year')->nullable();
+      $table->foreignId('review_id')->nullable();
     });
   }
   /**

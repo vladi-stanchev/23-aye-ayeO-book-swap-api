@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Genre;
+use App\Models\Review;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +22,12 @@ class BookFactory extends Factory
             'title' => $this->faker->text(200),
             'author' => $this->faker->name(),
             'image' => $this->faker->imageUrl(),
-            'genre_id' => Genre::factory()
+            'genre_id' => Genre::factory(),
+            'blurb' => $this->faker->text(500),
+            'claimed_by_name' => $this->faker->name(),
+            'page_count' => $this->faker->randomDigit(),
+            'year' => $this->faker->randomDigit(),
+            'review_id' => Review::factory()
         ];
     }
 }
