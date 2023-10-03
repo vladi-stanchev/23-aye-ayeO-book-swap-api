@@ -46,4 +46,14 @@ class BookTest extends TestCase
                     });
             });
     }
+
+    public function test_claim_book_success(): void
+    {
+        $response = $this->putJson('api/books/claim/{id}', [
+            'name' => 'test',
+            'email' => 'test@test.com'
+        ]);
+        $response->assertOk()
+        ;
+    }
 }
