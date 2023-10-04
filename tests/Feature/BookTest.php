@@ -50,9 +50,9 @@ class BookTest extends TestCase
 
     public function test_get_book_by_id(): void
     {
-        Book::factory()->create();
+        $book = Book::factory()->create();
 
-        $response = $this->getJson('api/books/{id}');
+        $response = $this->getJson('api/books/' . $book->id);
 
         $response->assertStatus(200)
 
@@ -61,7 +61,8 @@ class BookTest extends TestCase
                     ->whereAllType([
                         'message' => 'string'
                     ])
-                    ->has('data', 1, function (AssertableJson $json) {
+
+                    ->has('data', function (AssertableJson $json) {
                         $json->hasAll(['id', 'title', 'author', 'blurb', 'image', 'page_count', 'year', 'genre'])
                             ->whereAllType([
                                 'id' => 'integer',
