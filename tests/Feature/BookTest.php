@@ -88,9 +88,6 @@ class BookTest extends TestCase
     public function test_book_not_found()
     {
         $response = $this->getJson('/api/books/564756445323254');
-        // $expectedMessage = '{
-        //     "message": "Book with id 564756445323254 not found"
-        // }';
         $response->assertStatus(404);
         $response->assertJson(function (AssertableJson $json) {
             $json->has('message')
@@ -99,5 +96,58 @@ class BookTest extends TestCase
                     'Book with id 564756445323254 not found'
                 );
         });
+    }
+
+    public function test_book_not_found_claim()
+    {
+        $response = $this->putJson('/api/books/claim/564756445323254');
+        $response->assertStatus(404);
+        $response->assertJson(function (AssertableJson $json) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    'Book 564756445323254 was not found'
+                );
+        });
+    }
+
+    public function test_book_already_claimed()
+    {
+        $book = Book::factory()->create();
+        
+        $response = $this->putJson("api/books/claim/$book->id");
+        $response->assertStatus(400);
+        $response->assertJson(function (AssertableJson $json) use($book) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Book $book->id is already claimed"
+                );
+        });
+    }
+
+    public function test_book_claim_success()
+    {
+        $book = Book::factory(['claimed_by_name' => null])->create();
+
+        $response = $this->putJson("api/books/claim/$book->id");
+        $response->assertOk();
+        $response->assertJson(function (AssertableJson $json) use($book) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Book $book->id was claimed"
+                );
+        });
+    }
+
+    // NEXT STEP: MODIFY METHOD IN CONTROLLER TO PASS THIS TEST
+    public function test_book_claim_no_name_no_email()
+    {
+        Book::factory(['claimed_by_name' => null])->create();
+        
+        $response = $this->putJson('api/books/claim/1');
+        $response->assertStatus(422);
+        $response->assertInvalid(['name', 'email']);
     }
 }

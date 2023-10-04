@@ -30,4 +30,25 @@ class BookController extends Controller
             'message' => "Book with id $id not found"
         ], 404);
     }
+
+    public function claimById(int|string $id)
+    {     
+        $book = Book::find($id);
+        
+        if (!$book) {
+            return response()->json([
+                'message' => "Book $id was not found"
+            ], 404);
+        }
+
+        if ($book->claimed_by_name) {
+            return response()->json([
+                'message' => "Book $id is already claimed"
+            ], 400);
+        }
+
+        return response()->json([
+            'message' => "Book $id was claimed"
+        ]);
+    }
 }
