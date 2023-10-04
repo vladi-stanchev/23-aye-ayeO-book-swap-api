@@ -15,7 +15,7 @@ class BookController extends Controller
         ]);
     }
 
-    public function getById(int $id)
+    public function getById(int|string $id)
     {
         $book = Book::with('genre:id,name')->find($id);
 
