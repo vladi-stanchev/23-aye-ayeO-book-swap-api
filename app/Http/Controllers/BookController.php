@@ -17,9 +17,17 @@ class BookController extends Controller
 
     public function getById(int $id)
     {
+        $book = Book::with('genre:id,name')->find($id);
+
+        if ($book) {
+            return response()->json([
+                'data' => $book->makeHidden(['genre_id', 'created_at', 'updated_at']),
+                'message' => 'Book successfully retrieved'
+            ]);
+        }
+
         return response()->json([
-            'data' => Book::with('genre:id,name')->find($id)->makeHidden(['genre_id', 'created_at', 'updated_at']),
-            'message' => 'Book successfully retrieved'
-        ]);
+            'message' => "Book with id $id not found"
+        ], 404);
     }
 }

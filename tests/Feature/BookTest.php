@@ -83,4 +83,20 @@ class BookTest extends TestCase
                     });
             });
     }
+
+    public function test_book_not_found()
+    {
+        $response = $this->getJson('/api/books/564756445323254');
+        // $expectedMessage = '{
+        //     "message": "Book with id 564756445323254 not found"
+        // }';
+        $response->assertStatus(404);
+        $response->assertJson(function (AssertableJson $json) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    'Book with id 564756445323254 not found'
+                );
+        });
+    }
 }
