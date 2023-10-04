@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 
+use function PHPUnit\Framework\assertJson;
 
 class BookTest extends TestCase
 {
@@ -35,6 +36,42 @@ class BookTest extends TestCase
                                 'title' => 'string',
                                 'author' => 'string',
                                 'image' => 'string',
+                            ])
+                            ->has('genre', function (AssertableJson $json) {
+                                $json->hasAll(['id', 'name'])
+                                    ->whereAllType([
+                                        'id' => 'integer',
+                                        'name' => 'string'
+                                    ]);
+                            });
+                    });
+            });
+    }
+
+    public function test_get_book_by_id(): void
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->getJson('api/books/' . $book->id);
+
+        $response->assertStatus(200)
+
+            ->assertJson(function (AssertableJson $json) {
+                $json->hasAll(['message', 'data'])
+                    ->whereAllType([
+                        'message' => 'string'
+                    ])
+
+                    ->has('data', function (AssertableJson $json) {
+                        $json->hasAll(['id', 'title', 'author', 'blurb', 'image', 'page_count', 'year', 'genre'])
+                            ->whereAllType([
+                                'id' => 'integer',
+                                'title' => 'string',
+                                'author' => 'string',
+                                'blurb' => 'string',
+                                'image' => 'string',
+                                'page_count' => 'integer',
+                                'year' => 'integer'
                             ])
                             ->has('genre', function (AssertableJson $json) {
                                 $json->hasAll(['id', 'name'])
