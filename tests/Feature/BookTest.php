@@ -63,13 +63,14 @@ class BookTest extends TestCase
                     ])
 
                     ->has('data', function (AssertableJson $json) {
-                        $json->hasAll(['id', 'title', 'author', 'blurb', 'image', 'page_count', 'year', 'genre'])
+                        $json->hasAll(['id', 'title', 'author', 'blurb', 'image', 'claimed_by_name', 'page_count', 'year', 'genre'])
                             ->whereAllType([
                                 'id' => 'integer',
                                 'title' => 'string',
                                 'author' => 'string',
                                 'blurb' => 'string',
                                 'image' => 'string',
+                                'claimed_by_name' => 'string',
                                 'page_count' => 'integer',
                                 'year' => 'integer'
                             ])
