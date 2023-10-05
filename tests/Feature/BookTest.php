@@ -63,13 +63,14 @@ class BookTest extends TestCase
                     ])
 
                     ->has('data', function (AssertableJson $json) {
-                        $json->hasAll(['id', 'title', 'author', 'blurb', 'image', 'page_count', 'year', 'genre'])
+                        $json->hasAll(['id', 'title', 'author', 'blurb', 'image', 'claimed_by_name', 'page_count', 'year', 'genre'])
                             ->whereAllType([
                                 'id' => 'integer',
                                 'title' => 'string',
                                 'author' => 'string',
                                 'blurb' => 'string',
                                 'image' => 'string',
+                                'claimed_by_name' => 'string',
                                 'page_count' => 'integer',
                                 'year' => 'integer'
                             ])
@@ -87,9 +88,6 @@ class BookTest extends TestCase
     public function test_book_not_found()
     {
         $response = $this->getJson('/api/books/564756445323254');
-        // $expectedMessage = '{
-        //     "message": "Book with id 564756445323254 not found"
-        // }';
         $response->assertStatus(404);
         $response->assertJson(function (AssertableJson $json) {
             $json->has('message')
@@ -98,5 +96,92 @@ class BookTest extends TestCase
                     'Book with id 564756445323254 not found'
                 );
         });
+    }
+
+    public function test_book_not_found_claim()
+    {
+        $response = $this->putJson('/api/books/claim/564756445323254', [
+            'name' => 'test',
+            'email' => 'test@test.com'
+        ]);
+        $response->assertStatus(404);
+        $response->assertJson(function (AssertableJson $json) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    'Book 564756445323254 was not found'
+                );
+        });
+    }
+
+    public function test_book_already_claimed()
+    {
+        $book = Book::factory()->create();
+        
+        $response = $this->putJson("api/books/claim/$book->id", [
+            'name' => 'test',
+            'email' => 'test@test.com'
+        ]);
+        $response->assertStatus(400);
+        $response->assertJson(function (AssertableJson $json) use($book) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Book $book->id is already claimed"
+                );
+        });
+    }
+
+    public function test_book_claim_success()
+    {
+        $book = Book::factory(['claimed_by_name' => null])->create();
+
+        $response = $this->putJson("api/books/claim/$book->id", [
+            'name' => 'test',
+            'email' => 'test@test.com'
+        ]);
+        $response->assertOk();
+        $response->assertJson(function (AssertableJson $json) use($book) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Book $book->id was claimed"
+                );
+        });
+    }
+
+    public function test_book_claim_no_name_no_email()
+    {       
+        $response = $this->putJson('api/books/claim/1', [
+            'name' => '',
+            'email' => ''
+        ]);
+        $response->assertStatus(422);
+        $response->assertInvalid(['name', 'email']);
+    }
+
+    public function test_book_claim_invalid_email()
+    {       
+        $response = $this->putJson('api/books/claim/1', [
+            'name' => 'test',
+            'email' => 'test'
+        ]);
+        $response->assertStatus(422);
+        $response->assertInvalid('email');
+    }
+
+    public function test_book_claim_db_success()
+    {
+        $book = Book::factory(['claimed_by_name' => null])->create();
+
+        $this->putJson("api/books/claim/$book->id", [
+            'name' => 'test',
+            'email' => 'test@test.com'
+        ]);
+
+        $this->assertDatabaseHas('books', [
+            'claimed_by_name' => 'test',
+            'claimed_by_email' => 'test@test.com',
+        ]);
     }
 }
