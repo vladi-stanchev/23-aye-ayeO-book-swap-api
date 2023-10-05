@@ -20,7 +20,12 @@ class BookFactory extends Factory
         return [
             'title' => $this->faker->text(200),
             'author' => $this->faker->name(),
+            'blurb' => $this->faker->text(500),
             'image' => $this->faker->imageUrl(),
+            'claimed_by_name' => $this->faker->firstName(),
+            'claimed_by_email' => $this->faker->email(),
+            'page_count' => $this->faker->randomNumber(3, true),
+            'year' => $this->faker->year(),
             'genre_id' => Genre::factory()
         ];
     }
