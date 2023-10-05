@@ -19,8 +19,8 @@ class ReviewFactory extends Factory
     {
         return [
             'name' => $this->faker->name(),
-            'rating' => $this->faker->randomNumber(0, 5),
-            'review' => $this->faker->text(1000),
+            'rating' => $this->faker->numberBetween(0, 5),
+            'review' => $this->faker->text(255),
             'book_id' => Book::factory()
         ];
     }
