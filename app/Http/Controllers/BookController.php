@@ -92,6 +92,7 @@ class BookController extends Controller
 
         $book->claimed_by_name = $request->name;
         $book->claimed_by_email = $request->email;
+        $book->claimed = 1;
         $book->save();
 
         return response()->json([

@@ -17,7 +17,6 @@ class BookTest extends TestCase
 
     public function test_get_all_books_success(): void
     {
-        // Book::factory()->count(2)->create();
         Book::factory(['claimed' => 0])->count(2)->create();
         Book::factory(['claimed' => 1])->count(2)->create();
 
@@ -190,6 +189,7 @@ class BookTest extends TestCase
         $this->assertDatabaseHas('books', [
             'claimed_by_name' => 'test',
             'claimed_by_email' => 'test@test.com',
+            'claimed' => 1
         ]);
     }
 }
