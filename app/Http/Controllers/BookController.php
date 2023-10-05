@@ -61,8 +61,27 @@ class BookController extends Controller
         ]);
     }
 
-    public function returnById()
+    public function returnById(int|string $id, Request $request)
     {
-        return response()->json(['test']);
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $book = Book::find($id);
+
+        if (!$book) {
+            return response()->json([
+                'message' => "Book $id was not found"
+            ], 404);
+        }
+        if (!$book->claimed_by_name) {
+            return response()->json([
+                'message' => "Book $id is not currently claimed"
+            ], 400);
+        }
     }
+
+
+
+
 }
