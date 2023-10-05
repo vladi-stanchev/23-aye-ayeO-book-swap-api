@@ -31,8 +31,13 @@ class BookController extends Controller
         ], 404);
     }
 
-    public function claimById(int|string $id)
-    {     
+    public function claimById(int|string $id, Request $request)
+    {       
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email'
+        ]);
+
         $book = Book::find($id);
         
         if (!$book) {
@@ -46,6 +51,10 @@ class BookController extends Controller
                 'message' => "Book $id is already claimed"
             ], 400);
         }
+
+        $book->claimed_by_name = $request->name;
+        $book->claimed_by_email = $request->email;
+        $book->save();
 
         return response()->json([
             'message' => "Book $id was claimed"
