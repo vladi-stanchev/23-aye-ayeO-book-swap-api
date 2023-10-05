@@ -10,7 +10,7 @@ class BookController extends Controller
     public function getAll()
     {
         return response()->json([
-            'data' => Book::with('genre:id,name')->get()->makeHidden(['genre_id', 'created_at', 'updated_at', 'blurb', 'page_count', 'year', 'claimed_by_name', 'claimed_by_email']),
+            'data' => Book::with('genre:id,name')->get()->makeHidden(['genre_id', 'created_at', 'updated_at', 'blurb', 'page_count', 'year', 'claimed_by_name', 'claimed_by_email', 'claimed']),
             'message' => 'Books successfully retrieved'
         ]);
     }
@@ -21,7 +21,7 @@ class BookController extends Controller
 
         if ($book) {
             return response()->json([
-                'data' => $book->makeHidden(['genre_id', 'created_at', 'updated_at', 'claimed_by_email']),
+                'data' => $book->makeHidden(['genre_id', 'created_at', 'updated_at', 'claimed_by_email', 'claimed']),
                 'message' => 'Book successfully retrieved'
             ]);
         }

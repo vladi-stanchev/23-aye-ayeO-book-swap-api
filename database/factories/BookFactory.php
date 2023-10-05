@@ -26,7 +26,8 @@ class BookFactory extends Factory
             'claimed_by_email' => $this->faker->email(),
             'page_count' => $this->faker->randomNumber(3, true),
             'year' => $this->faker->year(),
-            'genre_id' => Genre::factory()
+            'genre_id' => Genre::factory(),
+            'claimed' => $this->faker->numberBetween(0,1)
         ];
     }
 }
