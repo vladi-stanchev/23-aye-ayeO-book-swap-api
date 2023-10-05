@@ -52,7 +52,14 @@ class BookTest extends TestCase
     public function test_no_books_found(): void
     {
         $response = $this->getJson('api/books/');
-        $response->assertStatus(404);
+        $response->assertStatus(404)
+            ->assertJson(function (AssertableJson $json) {
+                $json->has('message')
+                    ->where(
+                        'message',
+                        "No books found"
+                    );
+            });
     }
 
     public function test_get_book_by_id(): void
