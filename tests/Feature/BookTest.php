@@ -224,4 +224,46 @@ class BookTest extends TestCase
                 );
         });
     }
+
+    public function test_book_incorrect__claimed_email()
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->putJson("api/books/return/$book->id", [
+            'email' => 'wrong@wrong.com'
+        ]);
+        
+        $response->assertStatus(500); 
+        $response->assertJson(function (AssertableJson $json) use($book) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Book $book->id was not able to be returned"
+                );
+        });
+    }
+
+    public function test_book_return_success()
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->putJson("api/books/return/$book->id", [
+            'email' => $book->claimed_by_email
+        ]);
+
+        $response->assertOk();
+        $response->assertJson(function (AssertableJson $json) use($book) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Book $book->id was returned"
+                );
+        });
+
+        $this->assertDatabaseHas('books', [
+            'claimed_by_name' => null,
+            'claimed_by_email' => null,
+            'claimed' => 0
+        ]);
+    }
 };
