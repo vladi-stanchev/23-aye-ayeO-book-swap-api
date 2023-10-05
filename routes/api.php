@@ -23,4 +23,5 @@ Route::controller(BookController::class)->group(function () {
     Route::get('/books', 'getAll');
     Route::get('/books/{id}', 'getById');
     Route::put('/books/claim/{id}', 'claimById');
+    Route::put('/books/return/{id}', 'returnById');
 });

@@ -60,4 +60,9 @@ class BookController extends Controller
             'message' => "Book $id was claimed"
         ]);
     }
+
+    public function returnById()
+    {
+        return response()->json(['test']);
+    }
 }
