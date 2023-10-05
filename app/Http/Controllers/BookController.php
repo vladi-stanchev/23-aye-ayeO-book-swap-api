@@ -11,7 +11,7 @@ class BookController extends Controller
     {
         // Validate and throw 422 errors
         $request->validate([
-            'claimed' => 'nullable|numeric',
+            'claimed' => 'nullable|numeric|min:0|max:1',
         ]);
 
         $hidden =
@@ -28,14 +28,16 @@ class BookController extends Controller
             ];
 
         // If no param provided, get Unclaimed books
-        $claimed = $request->query('claimed', 0);
+        $claimed = $request->query('claimed');
 
-        // If param is a number that is different from 0 or 1, set to 0 (unclaimed)
-        $claimed = ($claimed == 1) ? $claimed : 0;
-
-
-        $books = Book::where('claimed', $claimed)
-            ->with('genre:id,name')
+        $books = Book::with('genre:id,name')
+            ->when(
+                $claimed !== null,
+                function ($query) use ($claimed) {
+                    return $query
+                        ->where('claimed', $claimed);
+                }
+            )
             ->get()
             ->makeHidden($hidden);
 

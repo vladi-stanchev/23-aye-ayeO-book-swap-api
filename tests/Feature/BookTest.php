@@ -17,10 +17,77 @@ class BookTest extends TestCase
 
     public function test_get_all_books_success(): void
     {
+        Book::factory()->count(20)->create();
+
+        $response = $this->getJson('/api/books');
+
+        $response->assertStatus(200)
+
+            ->assertJson(function (AssertableJson $json) {
+
+                $json->hasAll(['message', 'data'])
+                    ->whereAllType([
+                        'message' => 'string'
+                    ])
+                    ->has('data', 20, function (AssertableJson $json) {
+                        $json->hasAll(['id', 'title', 'author', 'image', 'genre'])
+                            ->whereAllType([
+                                'id' => 'integer',
+                                'title' => 'string',
+                                'author' => 'string',
+                                'image' => 'string'
+                            ])
+                            ->has('genre', function (AssertableJson $json) {
+                                $json->hasAll(['id', 'name'])
+                                    ->whereAllType([
+                                        'id' => 'integer',
+                                        'name' => 'string'
+                                    ]);
+                            });
+                    });
+            });
+    }
+
+    public function test_get_all_books_filter_unclaimed_success(): void
+    {
         Book::factory(['claimed' => 0])->count(2)->create();
         Book::factory(['claimed' => 1])->count(2)->create();
 
-        $response = $this->getJson('/api/books');
+        $response = $this->getJson('/api/books?claimed=0');
+
+        $response->assertStatus(200)
+
+            ->assertJson(function (AssertableJson $json) {
+
+                $json->hasAll(['message', 'data'])
+                    ->whereAllType([
+                        'message' => 'string'
+                    ])
+                    ->has('data', 2, function (AssertableJson $json) {
+                        $json->hasAll(['id', 'title', 'author', 'image', 'genre'])
+                            ->whereAllType([
+                                'id' => 'integer',
+                                'title' => 'string',
+                                'author' => 'string',
+                                'image' => 'string'
+                            ])
+                            ->has('genre', function (AssertableJson $json) {
+                                $json->hasAll(['id', 'name'])
+                                    ->whereAllType([
+                                        'id' => 'integer',
+                                        'name' => 'string'
+                                    ]);
+                            });
+                    });
+            });
+    }
+
+    public function test_get_all_books_filter_claimed_success(): void
+    {
+        Book::factory(['claimed' => 0])->count(2)->create();
+        Book::factory(['claimed' => 1])->count(2)->create();
+
+        $response = $this->getJson('/api/books?claimed=1');
 
         $response->assertStatus(200)
 
