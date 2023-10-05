@@ -20,7 +20,7 @@ class BookFactory extends Factory
         return [
             'title' => $this->faker->text(200),
             'author' => $this->faker->name(),
-            'blurb' => $this->faker->text(500),
+            'blurb' => $this->faker->text(225),
             'image' => $this->faker->imageUrl(),
             'claimed_by_name' => $this->faker->firstName(),
             'claimed_by_email' => $this->faker->email(),
