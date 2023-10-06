@@ -7,6 +7,7 @@ use App\Models\Review;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 
 class ReviewTest extends TestCase
@@ -16,34 +17,41 @@ class ReviewTest extends TestCase
     // 201
     public function test_review_add_success(): void
     {
-        $review = Review::factory()->create();
+        $book = Book::factory()->create();
 
         $response = $this->postJson('/api/reviews', [
-            'name' => $review->name,
-            'rating' => $review->rating,
-            'review' => $review->review,
-            'book_id' => $review->book_id
+            'name' => 'Josh',
+            'rating' => 5,
+            'review' => "Very wonderful amazing!",
+            'book_id' => $book->id
         ]);
         $response->assertStatus(201);
+        $response->assertJson(function (AssertableJson $json) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Review created"
+                );
+        });
     }
 
     // 201
     public function test_review_add_db_success()
     {
-        $review = Review::factory()->create();
+        $book = Book::factory()->create();
 
         $response = $this->postJson('/api/reviews', [
             'name' => 'Josh',
             'rating' => 0,
             'review' => 'Nohnohnohh',
-            'book_id' => $review->book_id
+            'book_id' => $book->id
         ]);
 
         $this->assertDatabaseHas('reviews', [
             'name' => 'Josh',
             'rating' => 0,
             'review' => 'Nohnohnohh',
-            'book_id' => $review->book_id
+            'book_id' => $book->id
         ]);
     }
 
