@@ -142,10 +142,34 @@ class BookController extends Controller
         ]);
     }
 
-    public function add() 
+    public function add(Request $request) 
     {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'author' => 'required|string|max:255',
+            'genre_id' => 'required|integer|min:1',
+            'blurb' => 'string|max:255',
+            'image' => 'url|max:999',
+            'year' => 'integer'
+        ]);
+
+        $newBook = new Book();
+
+        $newBook->title = $request->title;
+        $newBook->author = $request->author;
+        $newBook->genre_id = $request->genre_id;
+        $newBook->blurb = $request->blurb;
+        $newBook->image = $request->image;
+        $newBook->year = $request->year;
+
+        if ($newBook->save()) {
+            return response()->json([
+                'message' => 'Book created'
+            ], 201);
+        } 
+        
         return response()->json([
-            'test'
-        ])
+            'message' => 'Unexpected error occurred'
+        ], 500);
     }
 }

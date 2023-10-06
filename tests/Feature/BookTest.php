@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Book;
+use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -346,6 +347,60 @@ class BookTest extends TestCase
             'claimed_by_name' => null,
             'claimed_by_email' => null,
             'claimed' => 0
+        ]);
+    }
+
+    public function test_review_add_no_data(): void
+    {
+        $response = $this->postJson('/api/books', []);
+        $response->assertStatus(422)
+            ->assertInvalid(['title', 'author', 'genre_id']);
+    }
+
+    public function test_book_add_invalid_data(): void
+    {
+        $response = $this->postJson('/api/books', [
+            'title' => 7,
+            'author' => 7,
+            'genre_id' => 'hfenfdiefh',
+            'blurb' => 7,
+            'image' => 'uiwegfuewh',
+            'year' => 'heheij'
+
+        ]);
+        $response->assertStatus(422)
+            ->assertInvalid(['title', 'author', 'genre_id', 'blurb', 'image', 'year']);
+    }
+
+    public function test_book_add_success(): void
+    {
+        $genre = Genre::factory()->create();
+
+        $response = $this->postJson('/api/books', [
+            'title' => 'book title',
+            'author' => 'book person',
+            'genre_id' => $genre->id,
+            'blurb' => 'fidugfjkfhihd',
+            'image' => 'https://upload.wikimedia.org/wikipedia/commons/3/33/Fresh_made_bread_05.jpg',
+            'year' => 6767
+        ]);
+
+        $response->assertStatus(201);
+        $response->assertJson(function (AssertableJson $json) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Book created"
+                );
+        });
+
+        $this->assertDatabaseHas('books', [
+            'title' => 'book title',
+            'author' => 'book person',
+            'genre_id' => $genre->id,
+            'blurb' => 'fidugfjkfhihd',
+            'image' => 'https://upload.wikimedia.org/wikipedia/commons/3/33/Fresh_made_bread_05.jpg',
+            'year' => 6767
         ]);
     }
 };
