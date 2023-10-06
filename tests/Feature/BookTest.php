@@ -115,10 +115,88 @@ class BookTest extends TestCase
                     });
             });
     }
+    public function test_get_all_books_filter_genre_success(): void
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->getJson("/api/books?genre=$book->genre_id");
+
+        $response->assertStatus(200)
+
+            ->assertJson(function (AssertableJson $json) {
+
+                $json->hasAll(['message', 'data'])
+                    ->whereAllType([
+                        'message' => 'string'
+                    ])
+                    ->has('data', 1, function (AssertableJson $json) {
+                        $json->hasAll(['id', 'title', 'author', 'image', 'genre'])
+                            ->whereAllType([
+                                'id' => 'integer',
+                                'title' => 'string',
+                                'author' => 'string',
+                                'image' => 'string'
+                            ])
+                            ->has('genre', function (AssertableJson $json) {
+                                $json->hasAll(['id', 'name'])
+                                    ->whereAllType([
+                                        'id' => 'integer',
+                                        'name' => 'string'
+                                    ]);
+                            });
+                    });
+            });
+    }
+
+    public function test_get_all_books_search_success(): void
+    {
+        Book::factory(['title' => 'vaseline'])->create();
+
+        $response = $this->getJson('/api/books?search=vas');
+
+        $response->assertOk()
+
+            ->assertJson(function (AssertableJson $json) {
+
+                $json->hasAll(['message', 'data'])
+                    ->whereAllType([
+                        'message' => 'string'
+                    ])
+                    ->has('data', 1, function (AssertableJson $json) {
+                        $json->hasAll(['id', 'title', 'author', 'image', 'genre'])
+                            ->whereAllType([
+                                'id' => 'integer',
+                                'title' => 'string',
+                                'author' => 'string',
+                                'image' => 'string'
+                            ])
+                            ->has('genre', function (AssertableJson $json) {
+                                $json->hasAll(['id', 'name'])
+                                    ->whereAllType([
+                                        'id' => 'integer',
+                                        'name' => 'string'
+                                    ]);
+                            });
+                    });
+            });
+    }
 
     public function test_no_books_found(): void
     {
         $response = $this->getJson('api/books/');
+        $response->assertStatus(404)
+            ->assertJson(function (AssertableJson $json) {
+                $json->has('message')
+                    ->where(
+                        'message',
+                        "No books found"
+                    );
+            });
+    }
+
+    public function test_search_no_books_found(): void
+    {
+        $response = $this->getJson('api/books?search=ilonka');
         $response->assertStatus(404)
             ->assertJson(function (AssertableJson $json) {
                 $json->has('message')
@@ -166,7 +244,7 @@ class BookTest extends TestCase
             });
     }
 
-    public function test_book_not_found()
+    public function test_book_not_found(): void
     {
         $response = $this->getJson('/api/books/564756445323254');
         $response->assertStatus(404);
@@ -179,7 +257,7 @@ class BookTest extends TestCase
         });
     }
 
-    public function test_book_not_found_claim()
+    public function test_book_not_found_claim(): void
     {
         $response = $this->putJson('/api/books/claim/564756445323254', [
             'name' => 'test',
@@ -195,7 +273,7 @@ class BookTest extends TestCase
         });
     }
 
-    public function test_book_already_claimed()
+    public function test_book_already_claimed(): void
     {
         $book = Book::factory()->create();
 
@@ -213,7 +291,7 @@ class BookTest extends TestCase
         });
     }
 
-    public function test_book_claim_success()
+    public function test_book_claim_success(): void
     {
         $book = Book::factory(['claimed_by_name' => null])->create();
 
@@ -231,7 +309,7 @@ class BookTest extends TestCase
         });
     }
 
-    public function test_book_claim_no_name_no_email()
+    public function test_book_claim_no_name_no_email(): void
     {
         $response = $this->putJson('api/books/claim/1', [
             'name' => '',
@@ -241,7 +319,7 @@ class BookTest extends TestCase
         $response->assertInvalid(['name', 'email']);
     }
 
-    public function test_book_claim_invalid_email()
+    public function test_book_claim_invalid_email(): void
     {
         $response = $this->putJson('api/books/claim/1', [
             'name' => 'test',
@@ -251,7 +329,14 @@ class BookTest extends TestCase
         $response->assertInvalid('email');
     }
 
-    public function test_book_claim_db_success()
+    public function test_get_books_invalid_genre(): void
+    {
+        $response = $this->getJson('api/books?genre=thriller');
+        $response->assertStatus(422);
+        $response->assertInvalid('genre');
+    }
+
+    public function test_book_claim_db_success(): void
     {
         $book = Book::factory(['claimed_by_name' => null])->create();
 
@@ -267,8 +352,15 @@ class BookTest extends TestCase
         ]);
     }
 
+    public function test_get_books_invalid_search(): void
+    {
+        $response = $this->getJson('api/books?search=12');
+        $response->assertStatus(422);
+        $response->assertInvalid('search');
+    }
+
     public function test_book_return_invalid_email()
-    {       
+    {
         $response = $this->putJson('api/books/return/1', ['email' => 'test']);
         $response->assertStatus(422);
         $response->assertInvalid('email');
@@ -292,13 +384,13 @@ class BookTest extends TestCase
     public function test_book_not_currently_claimed()
     {
         $book = Book::factory(['claimed_by_name' => null])->create();
-        
+
         $response = $this->putJson("api/books/return/$book->id", [
             'email' => 'test@test.com'
         ]);
 
-        $response->assertStatus(400); 
-        $response->assertJson(function (AssertableJson $json) use($book) {
+        $response->assertStatus(400);
+        $response->assertJson(function (AssertableJson $json) use ($book) {
             $json->has('message')
                 ->where(
                     'message',
@@ -314,9 +406,9 @@ class BookTest extends TestCase
         $response = $this->putJson("api/books/return/$book->id", [
             'email' => 'test@test.com'
         ]);
-        
-        $response->assertStatus(400); 
-        $response->assertJson(function (AssertableJson $json) use($book) {
+
+        $response->assertStatus(400);
+        $response->assertJson(function (AssertableJson $json) use ($book) {
             $json->has('message')
                 ->where(
                     'message',
@@ -334,7 +426,7 @@ class BookTest extends TestCase
         ]);
 
         $response->assertOk();
-        $response->assertJson(function (AssertableJson $json) use($book) {
+        $response->assertJson(function (AssertableJson $json) use ($book) {
             $json->has('message')
                 ->where(
                     'message',
