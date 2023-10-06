@@ -124,17 +124,21 @@ class BookController extends Controller
 
         if ($book->claimed_by_email !== $request->email) {
             return response()->json([
-                'message' => "Book $id was not able to be returned"
-            ], 500);
+                'message' => "Book $id was not returned. $request->email did not claim this book."
+            ], 400);
         }
 
         $book->claimed_by_name = null;
         $book->claimed_by_email = null;
         $book->claimed = 0;
-        $book->save();
+        if ($book->save()) {
+            return response()->json([
+                'message' => "Book $id was returned"
+            ]);
+        }
 
         return response()->json([
-            'message' => "Book $id was returned"
+            'message' => "Book $id was not able to be returned"
         ]);
     }
 }

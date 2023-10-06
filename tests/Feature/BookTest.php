@@ -307,20 +307,20 @@ class BookTest extends TestCase
         });
     }
 
-    public function test_book_incorrect__claimed_email()
+    public function test_book_incorrect_claimed_email()
     {
-        $book = Book::factory()->create();
+        $book = Book::factory(['claimed_by_email' => 'not_test@test.com'])->create();
 
         $response = $this->putJson("api/books/return/$book->id", [
-            'email' => 'wrong@wrong.com'
+            'email' => 'test@test.com'
         ]);
         
-        $response->assertStatus(500); 
+        $response->assertStatus(400); 
         $response->assertJson(function (AssertableJson $json) use($book) {
             $json->has('message')
                 ->where(
                     'message',
-                    "Book $book->id was not able to be returned"
+                    "Book $book->id was not returned. test@test.com did not claim this book."
                 );
         });
     }
