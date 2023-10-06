@@ -27,7 +27,7 @@ class BookFactory extends Factory
             'page_count' => $this->faker->randomNumber(3, true),
             'year' => $this->faker->year(),
             'genre_id' => Genre::factory(),
-            'claimed' => $this->faker->numberBetween(0, 1)
+            'claimed' => $this->faker->numberBetween(0,1)
         ];
     }
 }

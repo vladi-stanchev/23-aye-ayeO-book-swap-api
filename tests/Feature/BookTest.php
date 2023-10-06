@@ -266,4 +266,86 @@ class BookTest extends TestCase
             'claimed' => 1
         ]);
     }
-}
+
+    public function test_book_return_invalid_email()
+    {       
+        $response = $this->putJson('api/books/return/1', ['email' => 'test']);
+        $response->assertStatus(422);
+        $response->assertInvalid('email');
+    }
+
+    public function test_book_not_found_return()
+    {
+        $response = $this->putJson('/api/books/return/564756445323254', [
+            'email' => 'test@test.com'
+        ]);
+        $response->assertStatus(404);
+        $response->assertJson(function (AssertableJson $json) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    'Book 564756445323254 was not found'
+                );
+        });
+    }
+
+    public function test_book_not_currently_claimed()
+    {
+        $book = Book::factory(['claimed_by_name' => null])->create();
+        
+        $response = $this->putJson("api/books/return/$book->id", [
+            'email' => 'test@test.com'
+        ]);
+
+        $response->assertStatus(400); 
+        $response->assertJson(function (AssertableJson $json) use($book) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Book $book->id is not currently claimed"
+                );
+        });
+    }
+
+    public function test_book_incorrect_claimed_email()
+    {
+        $book = Book::factory(['claimed_by_email' => 'not_test@test.com'])->create();
+
+        $response = $this->putJson("api/books/return/$book->id", [
+            'email' => 'test@test.com'
+        ]);
+        
+        $response->assertStatus(400); 
+        $response->assertJson(function (AssertableJson $json) use($book) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Book $book->id was not returned. test@test.com did not claim this book."
+                );
+        });
+    }
+
+    public function test_book_return_success()
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->putJson("api/books/return/$book->id", [
+            'email' => $book->claimed_by_email
+        ]);
+
+        $response->assertOk();
+        $response->assertJson(function (AssertableJson $json) use($book) {
+            $json->has('message')
+                ->where(
+                    'message',
+                    "Book $book->id was returned"
+                );
+        });
+
+        $this->assertDatabaseHas('books', [
+            'claimed_by_name' => null,
+            'claimed_by_email' => null,
+            'claimed' => 0
+        ]);
+    }
+};
