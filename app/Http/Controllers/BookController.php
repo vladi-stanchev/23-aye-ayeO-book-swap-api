@@ -141,4 +141,11 @@ class BookController extends Controller
             'message' => "Book $id was not able to be returned"
         ]);
     }
+
+    public function add() 
+    {
+        return response()->json([
+            'test'
+        ])
+    }
 }
