@@ -13,7 +13,7 @@ class ReviewController extends Controller
             'name' => 'required|string|max:255',
             'rating' => 'required|integer|min:0|max:5',
             'review' => 'required|string|min:10|max:1000',
-            'book_id' => 'required|integer|min:0|exists:books,id',
+            'book_id' => 'required|integer|min:1|exists:books,id',
         ]);
 
         $name = $request->name;
@@ -32,10 +32,10 @@ class ReviewController extends Controller
             return response()->json([
                 'message' => 'Review created'
             ], 201);
-        } else {
-            return response()->json([
-                'message' => 'Unexpected error occurred'
-            ], 500);
         }
+
+        return response()->json([
+            'message' => 'Unexpected error occurred'
+        ], 500);
     }
 }
