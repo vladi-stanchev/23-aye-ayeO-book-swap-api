@@ -33,6 +33,18 @@ class BookController extends Controller
         $search = $request->query('search');
 
         $books = Book::with('genre:id,name')
+
+            ->when(
+                $search !== null,
+                function ($query) use ($search) {
+                    return $query->where(function ($query) use ($search) {
+                        return $query
+                            ->where('title', 'LIKE', '%' . $search . '%')
+                            ->orWhere('author', 'LIKE', '%' . $search . '%')
+                            ->orWhere('blurb', 'LIKE', '%' . $search . '%');
+                    });
+                }
+            )
             ->when(
                 $claimed !== null,
                 function ($query) use ($claimed) {
@@ -40,6 +52,7 @@ class BookController extends Controller
                         ->where('claimed', $claimed);
                 }
             )
+
             ->when(
                 $genre !== null,
                 function ($query) use ($genre) {
@@ -47,15 +60,7 @@ class BookController extends Controller
                         ->where('genre_id', $genre);
                 }
             )
-            ->when(
-                $search !== null,
-                function ($query) use ($search) {
-                    return $query
-                        ->where('title', 'LIKE', '%' . $search . '%')
-                        ->orWhere('author', 'LIKE', '%' . $search . '%')
-                        ->orWhere('blurb', 'LIKE', '%' . $search . '%');
-                }
-            )
+
 
             ->get()
             ->makeHidden($hidden);
