@@ -9,9 +9,9 @@ class BookController extends Controller
 {
     public function getAll(Request $request)
     {
-        // Validate and throw 422 errors
         $request->validate([
             'claimed' => 'nullable|numeric|min:0|max:1',
+            'genre' => 'nullable|numeric|min:1|exists:genres,id'
         ]);
 
         $hidden =
@@ -27,8 +27,8 @@ class BookController extends Controller
                 'claimed'
             ];
 
-        // If no param provided, get Unclaimed books
         $claimed = $request->query('claimed');
+        $genre = $request->query('genre');
 
         $books = Book::with('genre:id,name')
             ->when(
@@ -38,17 +38,23 @@ class BookController extends Controller
                         ->where('claimed', $claimed);
                 }
             )
+            ->when(
+                $genre !== null,
+                function ($query) use ($genre) {
+                    return $query
+                        ->where('genre_id', $genre);
+                }
+
+            )
             ->get()
             ->makeHidden($hidden);
 
-        // Not found
         if (!count($books)) {
             return response()->json([
                 'message' => "No books found"
             ], 404);
         }
 
-        // Success
         return response()->json([
             'data' => $books,
             'message' => 'Books successfully retrieved'
