@@ -117,9 +117,9 @@ class BookTest extends TestCase
     }
     public function test_get_all_books_filter_genre_success(): void
     {
-        Book::factory()->count(1)->create();
+        $book = Book::factory()->create();
 
-        $response = $this->getJson('/api/books?genre=1');
+        $response = $this->getJson("/api/books?genre=$book->genre_id");
 
         $response->assertStatus(200)
 
