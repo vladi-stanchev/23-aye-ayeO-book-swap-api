@@ -149,9 +149,55 @@ class BookTest extends TestCase
             });
     }
 
+    public function test_get_all_books_search_success(): void
+    {
+        Book::factory(['title' => 'vaseline'])->create();
+
+        $response = $this->getJson('/api/books?search=vas');
+
+        $response->assertOk()
+
+            ->assertJson(function (AssertableJson $json) {
+
+                $json->hasAll(['message', 'data'])
+                    ->whereAllType([
+                        'message' => 'string'
+                    ])
+                    ->has('data', 1, function (AssertableJson $json) {
+                        $json->hasAll(['id', 'title', 'author', 'image', 'genre'])
+                            ->whereAllType([
+                                'id' => 'integer',
+                                'title' => 'string',
+                                'author' => 'string',
+                                'image' => 'string'
+                            ])
+                            ->has('genre', function (AssertableJson $json) {
+                                $json->hasAll(['id', 'name'])
+                                    ->whereAllType([
+                                        'id' => 'integer',
+                                        'name' => 'string'
+                                    ]);
+                            });
+                    });
+            });
+    }
+
     public function test_no_books_found(): void
     {
         $response = $this->getJson('api/books/');
+        $response->assertStatus(404)
+            ->assertJson(function (AssertableJson $json) {
+                $json->has('message')
+                    ->where(
+                        'message',
+                        "No books found"
+                    );
+            });
+    }
+
+    public function test_search_no_books_found(): void
+    {
+        $response = $this->getJson('api/books?search=ilonka');
         $response->assertStatus(404)
             ->assertJson(function (AssertableJson $json) {
                 $json->has('message')
@@ -307,8 +353,15 @@ class BookTest extends TestCase
         ]);
     }
 
+    public function test_get_books_invalid_search(): void
+    {
+        $response = $this->getJson('api/books?search=12');
+        $response->assertStatus(422);
+        $response->assertInvalid('search');
+    }
+
     public function test_book_return_invalid_email()
-    {       
+    {
         $response = $this->putJson('api/books/return/1', ['email' => 'test']);
         $response->assertStatus(422);
         $response->assertInvalid('email');
@@ -332,13 +385,13 @@ class BookTest extends TestCase
     public function test_book_not_currently_claimed()
     {
         $book = Book::factory(['claimed_by_name' => null])->create();
-        
+
         $response = $this->putJson("api/books/return/$book->id", [
             'email' => 'test@test.com'
         ]);
 
-        $response->assertStatus(400); 
-        $response->assertJson(function (AssertableJson $json) use($book) {
+        $response->assertStatus(400);
+        $response->assertJson(function (AssertableJson $json) use ($book) {
             $json->has('message')
                 ->where(
                     'message',
@@ -354,9 +407,9 @@ class BookTest extends TestCase
         $response = $this->putJson("api/books/return/$book->id", [
             'email' => 'test@test.com'
         ]);
-        
-        $response->assertStatus(400); 
-        $response->assertJson(function (AssertableJson $json) use($book) {
+
+        $response->assertStatus(400);
+        $response->assertJson(function (AssertableJson $json) use ($book) {
             $json->has('message')
                 ->where(
                     'message',
@@ -374,7 +427,7 @@ class BookTest extends TestCase
         ]);
 
         $response->assertOk();
-        $response->assertJson(function (AssertableJson $json) use($book) {
+        $response->assertJson(function (AssertableJson $json) use ($book) {
             $json->has('message')
                 ->where(
                     'message',

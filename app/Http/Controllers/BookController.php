@@ -11,7 +11,8 @@ class BookController extends Controller
     {
         $request->validate([
             'claimed' => 'nullable|numeric|min:0|max:1',
-            'genre' => 'nullable|numeric|min:1|exists:genres,id'
+            'genre' => 'nullable|numeric|min:1|exists:genres,id',
+            'search' => 'nullable|string|min:3'
         ]);
 
         $hidden =
@@ -29,8 +30,21 @@ class BookController extends Controller
 
         $claimed = $request->query('claimed');
         $genre = $request->query('genre');
+        $search = $request->query('search');
 
         $books = Book::with('genre:id,name')
+
+            ->when(
+                $search !== null,
+                function ($query) use ($search) {
+                    return $query->where(function ($query) use ($search) {
+                        return $query
+                            ->where('title', 'LIKE', '%' . $search . '%')
+                            ->orWhere('author', 'LIKE', '%' . $search . '%')
+                            ->orWhere('blurb', 'LIKE', '%' . $search . '%');
+                    });
+                }
+            )
             ->when(
                 $claimed !== null,
                 function ($query) use ($claimed) {
@@ -38,14 +52,16 @@ class BookController extends Controller
                         ->where('claimed', $claimed);
                 }
             )
+
             ->when(
                 $genre !== null,
                 function ($query) use ($genre) {
                     return $query
                         ->where('genre_id', $genre);
                 }
-
             )
+
+
             ->get()
             ->makeHidden($hidden);
 
