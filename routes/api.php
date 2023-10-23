@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\GenreController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,3 +30,5 @@ Route::controller(BookController::class)->group(function () {
 });
 
 Route::post('/reviews', [ReviewController::class, 'add']);
+
+Route::get('/genres', [GenreController::class, 'getAll']);
