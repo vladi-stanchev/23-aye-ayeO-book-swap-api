@@ -84,7 +84,7 @@ class BookController extends Controller
         if ($book) {
             return response()->json([
                 'data' => $book->makeHidden(['genre_id', 'created_at', 'updated_at', 'claimed_by_email', 'claimed']),
-                'message' => 'Book successfully retrieved'
+                'message' => 'Book successfully found'
             ]);
         }
 
@@ -164,7 +164,7 @@ class BookController extends Controller
         ]);
     }
 
-    public function add(Request $request) 
+    public function add(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
@@ -188,8 +188,8 @@ class BookController extends Controller
             return response()->json([
                 'message' => 'Book created'
             ], 201);
-        } 
-        
+        }
+
         return response()->json([
             'message' => 'Unexpected error occurred'
         ], 500);
