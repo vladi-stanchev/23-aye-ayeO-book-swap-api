@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Book;
 use App\Models\Genre;
+use App\Models\Review;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -211,6 +212,7 @@ class BookTest extends TestCase
     public function test_get_book_by_id(): void
     {
         $book = Book::factory()->create();
+        Review::factory()->count(5)->create(['book_id' => $book->id]);
 
         $response = $this->getJson('api/books/' . $book->id);
 
@@ -239,6 +241,31 @@ class BookTest extends TestCase
                                     ->whereAllType([
                                         'id' => 'integer',
                                         'name' => 'string'
+                                    ]);
+                            })
+                            // ->has('reviews', function (AssertableJson $json) {
+                            //     $json->hasAll(['id', 'name', 'rating', 'review'])
+                            //         ->whereAllType([
+                            //             '*' => [
+                            //                 'id' => 'integer',
+                            //                 'name' => 'string',
+                            //                 'rating' => 'integer',
+                            //                 'review' => 'string'
+                            //             ]
+                            //         ]);
+                            // });
+                            ->has('reviews', 5, function (AssertableJson $json) {
+                                $json->hasAll([
+                                    'id',
+                                    'name',
+                                    'rating',
+                                    'review',
+                                ])
+                                    ->whereAllType([
+                                        'id' => 'integer',
+                                        'name' => 'string',
+                                        'rating' => 'integer',
+                                        'review' => 'string',
                                     ]);
                             });
                     });

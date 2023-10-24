@@ -79,11 +79,15 @@ class BookController extends Controller
 
     public function getById(int|string $id)
     {
-        $book = Book::with('genre:id,name')->find($id);
+
+        $book = Book::with(['genre:id,name', 'reviews'])->find($id);
 
         if ($book) {
+            $book->makeHidden(['genre_id', 'created_at', 'updated_at', 'claimed_by_email', 'claimed']);
+            $book->reviews->makeHidden(['book_id', 'created_at', 'updated_at']);
+
             return response()->json([
-                'data' => $book->makeHidden(['genre_id', 'created_at', 'updated_at', 'claimed_by_email', 'claimed']),
+                'data' => $book,
                 'message' => 'Book successfully found'
             ]);
         }
