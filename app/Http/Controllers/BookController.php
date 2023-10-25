@@ -11,8 +11,8 @@ class BookController extends Controller
     {
         $request->validate([
             'claimed' => 'nullable|numeric|min:0|max:1',
-            'genre' => 'nullable|numeric|min:1|exists:genres,id',
-            'search' => 'nullable|string|min:3'
+            'genre' => 'nullable|numeric|min:0' . ($request->query('genre') == 0 ? '' : '|exists:genres,id'),
+            'search' => 'nullable|string'
         ]);
 
         $hidden =
@@ -52,16 +52,15 @@ class BookController extends Controller
                         ->where('claimed', $claimed);
                 }
             )
-
             ->when(
                 $genre !== null,
                 function ($query) use ($genre) {
-                    return $query
-                        ->where('genre_id', $genre);
+                    if ($genre == 0) {
+                        return $query;
+                    }
+                    return $query->where('genre_id', $genre);
                 }
             )
-
-
             ->get()
             ->makeHidden($hidden);
 
@@ -76,6 +75,7 @@ class BookController extends Controller
             'message' => 'Books successfully retrieved'
         ]);
     }
+
 
     public function getById(int|string $id)
     {
