@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use Illuminate\Http\Request;
+use App\Rules\IsbnRule;
 
 class BookController extends Controller
 {
@@ -25,7 +26,10 @@ class BookController extends Controller
                 'year',
                 'claimed_by_name',
                 'claimed_by_email',
-                'claimed'
+                'claimed',
+                'isbn10',
+                'isbn13',
+                'language'
             ];
 
         $claimed = $request->query('claimed');
@@ -83,7 +87,14 @@ class BookController extends Controller
         $book = Book::with(['genre:id,name', 'reviews'])->find($id);
 
         if ($book) {
-            $book->makeHidden(['genre_id', 'created_at', 'updated_at', 'claimed_by_email', 'claimed']);
+            $book->makeHidden([
+                'genre_id',
+                'created_at',
+                'updated_at',
+                'claimed_by_email',
+                'claimed',
+
+            ]);
             $book->reviews->makeHidden(['book_id', 'created_at', 'updated_at']);
 
             return response()->json([
@@ -174,9 +185,12 @@ class BookController extends Controller
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'genre_id' => 'required|integer|min:1',
-            'blurb' => 'string|max:255',
+            'blurb' => 'string|max:10000',
             'image' => 'url|max:999',
-            'year' => 'integer'
+            'year' => 'integer',
+            'isbn10' => ['required', 'string', new IsbnRule],
+            'isbn13' => ['required', 'string', new IsbnRule],
+            'language' => 'string|max:2'
         ]);
 
         $newBook = new Book();
@@ -187,6 +201,9 @@ class BookController extends Controller
         $newBook->blurb = $request->blurb;
         $newBook->image = $request->image;
         $newBook->year = $request->year;
+        $newBook->isbn10 = $request->isbn10;
+        $newBook->isbn13 = $request->isbn13;
+        $newBook->language = $request->language;
 
         if ($newBook->save()) {
             return response()->json([

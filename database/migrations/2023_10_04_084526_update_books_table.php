@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('books', function (Blueprint $table) {
-            $table->string('blurb')->nullable();
+            $table->text('blurb')->nullable();
             $table->integer('page_count')->nullable();
             $table->integer('year')->nullable();
         });
@@ -24,9 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('books', function (Blueprint $table) {
-            $table->dropColumn('blurb');
-            $table->dropColumn('page_count');
-            $table->dropColumn('year');
+            $table->dropColumn(['blurb', 'page_count', 'year']);
         });
     }
 };
