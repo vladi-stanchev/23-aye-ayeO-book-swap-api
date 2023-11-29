@@ -185,12 +185,12 @@ class BookController extends Controller
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'genre_id' => 'required|integer|min:1',
-            'blurb' => 'string|max:10000',
-            'image' => 'url|max:999',
-            'year' => 'integer',
+            'blurb' => 'required|string|max:10000',
+            'image' => 'required|url|max:999',
+            'year' => 'required|integer',
             'isbn10' => ['required', 'string', new IsbnRule],
             'isbn13' => ['required', 'string', new IsbnRule],
-            'language' => 'string|max:2'
+            'language' => 'required|string|max:2'
         ]);
 
         $newBook = new Book();
