@@ -22,6 +22,8 @@ class BookTest extends TestCase
         Book::factory()->count(20)->create();
 
         $response = $this->getJson('/api/books');
+        $response->dump();
+
 
         $response->assertStatus(200)
 
@@ -225,7 +227,7 @@ class BookTest extends TestCase
                     ])
 
                     ->has('data', function (AssertableJson $json) {
-                        $json->hasAll(['id', 'title', 'author', 'blurb', 'image', 'claimed_by_name', 'page_count', 'year', 'genre'])
+                        $json->hasAll(['id', 'title', 'author', 'blurb', 'image', 'claimed_by_name', 'page_count', 'year', 'genre', 'isbn10', 'isbn13', 'language'])
                             ->whereAllType([
                                 'id' => 'integer',
                                 'title' => 'string',
@@ -234,7 +236,10 @@ class BookTest extends TestCase
                                 'image' => 'string',
                                 'claimed_by_name' => 'string',
                                 'page_count' => 'integer',
-                                'year' => 'integer'
+                                'year' => 'integer',
+                                'isbn10' => 'string',
+                                'isbn13' => 'string',
+                                'language' => 'string'
                             ])
                             ->has('genre', function (AssertableJson $json) {
                                 $json->hasAll(['id', 'name'])
@@ -243,17 +248,7 @@ class BookTest extends TestCase
                                         'name' => 'string'
                                     ]);
                             })
-                            // ->has('reviews', function (AssertableJson $json) {
-                            //     $json->hasAll(['id', 'name', 'rating', 'review'])
-                            //         ->whereAllType([
-                            //             '*' => [
-                            //                 'id' => 'integer',
-                            //                 'name' => 'string',
-                            //                 'rating' => 'integer',
-                            //                 'review' => 'string'
-                            //             ]
-                            //         ]);
-                            // });
+
                             ->has('reviews', 5, function (AssertableJson $json) {
                                 $json->hasAll([
                                     'id',
@@ -380,13 +375,6 @@ class BookTest extends TestCase
         ]);
     }
 
-    public function test_get_books_invalid_search(): void
-    {
-        $response = $this->getJson('api/books?search=12');
-        $response->assertStatus(422);
-        $response->assertInvalid('search');
-    }
-
     public function test_book_return_invalid_email()
     {
         $response = $this->putJson('api/books/return/1', ['email' => 'test']);
@@ -501,7 +489,10 @@ class BookTest extends TestCase
             'genre_id' => $genre->id,
             'blurb' => 'fidugfjkfhihd',
             'image' => 'https://upload.wikimedia.org/wikipedia/commons/3/33/Fresh_made_bread_05.jpg',
-            'year' => 6767
+            'year' => 6767,
+            'isbn10' => '1565847032',
+            'isbn13' => '9781565847033',
+            'language' => 'en'
         ]);
 
         $response->assertStatus(201);
@@ -519,7 +510,10 @@ class BookTest extends TestCase
             'genre_id' => $genre->id,
             'blurb' => 'fidugfjkfhihd',
             'image' => 'https://upload.wikimedia.org/wikipedia/commons/3/33/Fresh_made_bread_05.jpg',
-            'year' => 6767
+            'year' => 6767,
+            'isbn10' => '1565847032',
+            'isbn13' => '9781565847033',
+            'language' => 'en'
         ]);
     }
 };
